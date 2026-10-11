@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#070a1f" />
+<title>Something I’ve been meaning to tell you</title>
+<meta name="description" content="Something I’ve been meaning to tell you." />
+<meta property="og:title" content="Something I’ve been meaning to tell you" />
+<meta property="og:description" content="A small thought, for you." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8C%99%3C/text%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --ivory:#fff6ea;
+    --gold:#f1cf8e;
+    --serif:"Cormorant Garamond","Iowan Old Style",Palatino,"Palatino Linotype",Georgia,serif;
+  }
+  *,*::before,*::after{ box-sizing:border-box; }
+  html,body{
+    margin:0; height:100%;
+    background:#070a1f; color:var(--ivory);
+    overflow:hidden; overscroll-behavior:none;
+    font-family:var(--serif);
+    -webkit-font-smoothing:antialiased;
+  }
+  body{ user-select:none; -webkit-user-select:none; -webkit-tap-highlight-color:transparent; }
+  #sky{ position:fixed; inset:0; width:100%; height:100%; display:block; }
+  body::after{
+    content:""; position:fixed; inset:0; pointer-events:none; z-index:50;
+    opacity:.07; mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* ---------- the first tap ---------- */
+  #intro{
+    position:fixed; inset:0; z-index:30;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:28px; text-align:center; cursor:pointer;
+    transition:opacity 1.4s ease, filter 1.4s ease;
+  }
+  #intro.gone{ opacity:0; filter:blur(12px); pointer-events:none; }
+  #intro h1{
+    margin:0; max-width:14em;
+    font-weight:500; font-style:italic;
+    font-size:clamp(2.1rem, 7.6vw, 3.8rem); line-height:1.15;
+    text-shadow:0 0 40px rgba(241,207,142,.25), 0 4px 18px rgba(0,0,0,.5);
+    opacity:0; animation:rise 2s .4s cubic-bezier(.2,.8,.2,1) forwards;
+  }
+  #begin{
+    position:relative; margin-top:clamp(40px, 8vh, 70px);
+    font:inherit; font-weight:600; font-size:clamp(1.05rem, 4.2vw, 1.3rem);
+    letter-spacing:.22em; text-transform:uppercase;
+    color:#2a1a10;
+    background:linear-gradient(135deg, #fde9c4, #f1cf8e 55%, #d9a05e);
+    border:0; border-radius:999px; padding:18px 42px 17px; cursor:pointer;
+    box-shadow:0 0 0 1px rgba(255,240,214,.6) inset, 0 12px 44px rgba(241,190,130,.4);
+    opacity:0; animation:rise 1.4s 1.6s cubic-bezier(.2,.8,.2,1) forwards;
+  }
+  #begin::after{
+    content:""; position:absolute; inset:-8px; border-radius:inherit;
+    border:2px solid rgba(241,207,142,.7);
+    opacity:0; animation:ring 2.6s 3s ease-out infinite;
+  }
+  @keyframes ring{ 0%{ opacity:.85; transform:scale(.95); } 100%{ opacity:0; transform:scale(1.35); } }
+  #intro .note{
+    margin:24px 0 0; font-size:clamp(1rem, 3.6vw, 1.2rem); font-weight:500; letter-spacing:.08em;
+    color:rgba(255,246,234,.7);
+    opacity:0; animation:rise 1.4s 2.2s forwards;
+  }
+  @keyframes rise{ from{ opacity:0; transform:translateY(16px); } to{ opacity:1; transform:none; } }
+
+  /* ---------- the words ---------- */
+  #story{
+    position:fixed; z-index:10; left:50%; top:0;
+    transform:translateX(-50%);
+    width:min(860px, 90vw);
+    height:calc(100% - 40px);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; pointer-events:none;
+  }
+  #story::before{
+    content:""; position:absolute; left:50%; top:50%; z-index:-1;
+    width:120%; height:80%; transform:translate(-50%, -50%);
+    background:radial-gradient(closest-side, rgba(8,6,24,.45), rgba(8,6,24,.18) 60%, transparent);
+  }
+  .line{
+    margin:0 0 .5em;
+    font-weight:500;
+    font-size:clamp(1.7rem, 5.6vw, 3.1rem);
+    line-height:1.22;
+    color:var(--ivory);
+    text-shadow:0 2px 3px rgba(0,0,0,.35), 0 6px 30px rgba(0,0,0,.45);
+    transition:opacity 1.6s ease, filter 1.6s ease, transform 1.6s ease;
+  }
+  .line.dim{ opacity:.55; }
+  .line.out{ opacity:0; filter:blur(10px); transform:translateY(-14px); }
+  .line .w{
+    display:inline-block;
+    opacity:0; filter:blur(8px); transform:translateY(.35em);
+    animation:word 1.3s cubic-bezier(.2,.8,.2,1) forwards;
+    animation-delay:calc(var(--i) * 95ms);
+  }
+  @keyframes word{ to{ opacity:1; filter:none; transform:none; } }
+  .line.soft{ font-style:italic; }
+  .line.quote{
+    font-style:italic; font-weight:600;
+    font-size:clamp(2rem, 7vw, 3.8rem);
+    margin-top:.25em;
+  }
+  .line.quote .w{
+    background:linear-gradient(180deg, #fff6e0 15%, #f1cf8e 60%, #d79a5c);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .line.warm{
+    font-weight:600;
+    font-size:clamp(1.9rem, 6.4vw, 3.5rem);
+  }
+
+  #again{
+    position:fixed; left:50%; bottom:calc(18px + env(safe-area-inset-bottom)); z-index:20;
+    transform:translateX(-50%);
+    font:inherit; font-size:.95rem; font-weight:600; letter-spacing:.24em; text-transform:uppercase;
+    color:rgba(255,246,234,.65); background:none; border:0; padding:10px 16px; cursor:pointer;
+    opacity:0; pointer-events:none; transition:opacity 2s ease;
+  }
+  #again.on{ opacity:1; pointer-events:auto; }
+
+  /* ---------- the song, as a little photograph ---------- */
+  #song{
+    position:fixed; z-index:25;
+    right:clamp(14px, 3vw, 34px); bottom:calc(clamp(14px, 3vw, 34px) + env(safe-area-inset-bottom));
+    width:224px; padding:12px 12px 10px;
+    background:#fbf4e6; color:#3a2a20;
+    border-radius:3px;
+    box-shadow:0 18px 50px rgba(0,0,0,.45), 0 2px 6px rgba(0,0,0,.25);
+    transform:translateY(160%) rotate(4deg);
+    transition:transform 1.8s cubic-bezier(.2,.8,.2,1);
+  }
+  #song.in{ transform:rotate(-3deg); }
+  #song::before{
+    content:""; position:absolute; top:-12px; left:50%; width:84px; height:24px;
+    transform:translateX(-50%) rotate(2deg);
+    background:rgba(241,207,142,.55); box-shadow:0 1px 3px rgba(0,0,0,.12);
+  }
+  #song .frame{ width:200px; height:200px; background:#1a1420; overflow:hidden; }
+  #song .frame iframe, #song .frame > div{ width:200px; height:200px; display:block; border:0; }
+  #song .cap{ margin:8px 2px 0; font-style:italic; font-size:1rem; line-height:1.2; }
+  #song .cap small{ display:block; font-style:normal; font-size:.78rem; letter-spacing:.18em; text-transform:uppercase; opacity:.6; margin-top:3px; }
+  #song .hint{
+    position:absolute; left:50%; top:-46px; transform:translateX(-50%);
+    white-space:nowrap; font-size:1rem; font-weight:600; color:var(--ivory);
+    background:rgba(20,12,30,.75); border:1px solid rgba(241,207,142,.5);
+    border-radius:999px; padding:7px 14px;
+    opacity:0; transition:opacity .8s ease; pointer-events:none;
+  }
+  #song.ask .hint{ opacity:1; }
+  #song .fallback{ display:none; margin:6px 2px 0; font-size:.95rem; color:#8a4a2a; }
+  #song.broken .fallback{ display:block; }
+
+  @media (max-width:640px){
+    #story{ height:calc(100% - 300px); top:10px; }
+    #song{ right:auto; left:50%; transform:translate(-50%, 160%) rotate(4deg); }
+    #song.in{ transform:translate(-50%, 0) rotate(-2deg); }
+    #again{ bottom:auto; top:calc(14px + env(safe-area-inset-top)); }
+  }
+  @media (prefers-reduced-motion:reduce){
+    #begin::after{ animation:none; }
+  }
+</style>
+</head>
+<body>
+<canvas id="sky" aria-hidden="true"></canvas>
+
+<main id="story" aria-live="polite"></main>
+<button id="again" type="button">Read again</button>
+
+<aside id="song" aria-label="Now playing">
+  <span class="hint">Tap the picture to play the song</span>
+  <div class="frame"><div id="yt"></div></div>
+  <p class="cap">I Thought I Saw Your Face Today<small>She &amp; Him</small></p>
+  <a class="fallback" href="https://www.youtube.com/watch?v=HJstyRBLqBQ" target="_blank" rel="noopener">Play it on YouTube ↗</a>
+</aside>
+
+<section id="intro" aria-label="Start">
+  <h1>There’s something I’ve been meaning to tell you.</h1>
+  <button id="begin" type="button">Tap to begin</button>
+  <p class="note">Sound on, please.</p>
+</section>
+
+<script>
+(() => {
+  "use strict";
+
+  const VIDEO_ID = "HJstyRBLqBQ";
+
+  const STORY = [
+    { stage: 0, lines: [
+      { t: "You know…", c: "soft" },
+      { t: "sometimes I catch myself quietly wondering." }
+    ]},
+    { stage: 1, lines: [
+      { t: "I wonder if your mother ever watched you sleeping when you were little," },
+      { t: "and felt that strange, tender sorrow only parents know —" }
+    ]},
+    { stage: 2, lines: [
+      { t: "the ache of having made something so lovely,", fx: "bloom" },
+      { t: "and softly asking herself,", c: "soft" },
+      { t: "“Will the world ever deserve her?”", c: "quote", fx: "star" }
+    ]},
+    { stage: 3, lines: [
+      { t: "I don’t know if it ever will." },
+      { t: "But I know it’s a warmer, lovelier place, simply because you’re in it.", c: "warm", fx: "dawn" }
+    ]}
+  ];
+
+  const TAU = Math.PI * 2;
+  const $ = (s) => document.querySelector(s);
+  const rand = (a, b) => a + Math.random() * (b - a);
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const pick = (a) => a[(Math.random() * a.length) | 0];
+  const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ================================================================
+     Sky
+     ================================================================ */
+  const cv = $("#sky"), ctx = cv.getContext("2d");
+  let W = 0, H = 0, DPR = 1, U = 1;
+  function resize(){
+    DPR = Math.min(devicePixelRatio || 1, 2);
+    W = innerWidth; H = innerHeight;
+    cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    U = clamp(Math.min(W, H) / 760, 0.6, 1.4);
+  }
+  resize();
+  addEventListener("resize", resize);
+  const DENS = (REDUCED ? 0.5 : 1) * (innerWidth < 640 ? 0.7 : 1);
+
+  const hex = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+  const PAL = [
+    { sky: ["#070a1f", "#141a3e", "#2a2350"], stars: 1,    moon: 1,   dawn: 0,   cloud: [150, 140, 210] },
+    { sky: ["#0c0a26", "#2a1a48", "#5e3160"], stars: 0.9,  moon: 1,   dawn: 0.05, cloud: [200, 150, 200] },
+    { sky: ["#110b29", "#3a1d50", "#93466a"], stars: 1,    moon: 1,   dawn: 0.15, cloud: [235, 160, 190] },
+    { sky: ["#1e1a44", "#71406f", "#f2a46e"], stars: 0.25, moon: 0.4, dawn: 1,   cloud: [255, 200, 170] }
+  ].map((p) => ({ ...p, sky: p.sky.map(hex) }));
+  const cur = { sky: PAL[0].sky.map((c) => c.slice()), stars: 1, moon: 0, dawn: 0, cloud: PAL[0].cloud.slice() };
+  let stage = 0;
+
+  function sprite(size, draw){
+    const c = document.createElement("canvas"); c.width = c.height = size;
+    draw(c.getContext("2d"), size); return c;
+  }
+  const BOKEH = {};
+  [["gold", "255,214,150"], ["rose", "255,170,190"], ["peach", "255,190,150"], ["lilac", "200,180,255"]].forEach(([k, rgb]) => {
+    BOKEH[k] = sprite(128, (g, s) => {
+      const gr = g.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
+      gr.addColorStop(0, `rgba(${rgb},.32)`);
+      gr.addColorStop(0.72, `rgba(${rgb},.38)`);
+      gr.addColorStop(0.86, `rgba(${rgb},.5)`);
+      gr.addColorStop(1, `rgba(${rgb},0)`);
+      g.fillStyle = gr; g.fillRect(0, 0, s, s);
+    });
+  });
+  const GLOW = sprite(64, (g, s) => {
+    const gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+    gr.addColorStop(0, "rgba(255,255,255,1)");
+    gr.addColorStop(0.2, "rgba(255,226,180,.85)");
+    gr.addColorStop(0.55, "rgba(255,200,150,.25)");
+    gr.addColorStop(1, "rgba(255,200,150,0)");
+    g.fillStyle = gr; g.fillRect(0, 0, s, s);
+  });
+  const SOFT = sprite(64, (g, s) => {
+    const gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+    gr.addColorStop(0, "rgba(255,255,255,.7)");
+    gr.addColorStop(0.5, "rgba(255,255,255,.25)");
+    gr.addColorStop(1, "rgba(255,255,255,0)");
+    g.fillStyle = gr; g.fillRect(0, 0, s, s);
+  });
+  const MOON = sprite(256, (g, s) => {
+    const r = s * 0.3, cx = s / 2, cy = s / 2;
+    const gr = g.createRadialGradient(cx - r * 0.3, cy - r * 0.3, r * 0.1, cx, cy, r);
+    gr.addColorStop(0, "#fffaf0"); gr.addColorStop(1, "#f3dfb6");
+    g.fillStyle = gr; g.beginPath(); g.arc(cx, cy, r, 0, TAU); g.fill();
+    g.globalCompositeOperation = "destination-out";
+    g.beginPath(); g.arc(cx + r * 0.45, cy - r * 0.18, r * 0.86, 0, TAU); g.fill();
+  });
+
+  const stars = [];
+  for (let i = 0; i < Math.round(260 * DENS); i++){
+    stars.push({ x: Math.random(), y: Math.pow(Math.random(), 1.4) * 0.8, r: rand(0.3, 1.5), s: rand(0.5, 2), ph: rand(0, TAU) });
+  }
+  const bokeh = [];
+  for (let i = 0; i < Math.round(46 * DENS); i++){
+    bokeh.push({
+      x: Math.random(), y: Math.random(), z: Math.random(),
+      k: pick(["gold", "gold", "rose", "peach", "lilac"]), ph: rand(0, TAU)
+    });
+  }
+  const clouds = [];
+  for (let i = 0; i < 7; i++) clouds.push({ x: Math.random(), y: rand(0.15, 0.7), w: rand(0.5, 0.9), h: rand(0.06, 0.12), v: rand(0.004, 0.01) });
+  const parts = [];
+  function spark(x, y, vx, vy, size, life, o = {}){
+    if (parts.length > 900) return;
+    parts.push(Object.assign({ x, y, vx, vy, size, life, max: life, g: 0, drag: 0.8 }, o));
+  }
+  function bloom(){
+    const cx = W / 2, cy = H * 0.42;
+    for (let i = 0; i < Math.round(120 * DENS); i++){
+      const a = rand(0, TAU), v = rand(30, 260) * U;
+      spark(cx, cy, Math.cos(a) * v, Math.sin(a) * v, rand(8, 22) * U, rand(1.8, 3.6), { drag: 1.1 });
+    }
+    flash = 0.18;
+  }
+  let shoot = null;
+  function shootingStar(){
+    shoot = { x: rand(0.1, 0.45) * W, y: rand(0.05, 0.2) * H, vx: rand(800, 1050) * U, vy: rand(330, 450) * U, life: 1.2 };
+  }
+  let flash = 0, ptr = null, ptrX = 0, ptrY = 0;
+
+  function update(dt, t){
+    const k = 1 - Math.exp(-dt * 0.45);
+    const P = PAL[stage];
+    for (let i = 0; i < 3; i++) for (let c = 0; c < 3; c++) cur.sky[i][c] += (P.sky[i][c] - cur.sky[i][c]) * k;
+    for (let c = 0; c < 3; c++) cur.cloud[c] += (P.cloud[c] - cur.cloud[c]) * k;
+    cur.stars += (P.stars - cur.stars) * k;
+    cur.moon += ((started ? P.moon : 0.6) - cur.moon) * k * 1.5;
+    cur.dawn += (P.dawn - cur.dawn) * k;
+    for (const b of bokeh){
+      b.y -= dt * (0.006 + b.z * 0.02);
+      b.x += Math.sin(t * 0.3 + b.ph) * dt * 0.004;
+      if (b.y < -0.15){ b.y = 1.15; b.x = Math.random(); }
+    }
+    for (const c of clouds){ c.x += c.v * dt; if (c.x - c.w > 1.1) c.x = -c.w; }
+    for (let i = parts.length - 1; i >= 0; i--){
+      const p = parts[i];
+      p.life -= dt;
+      if (p.life <= 0){ parts.splice(i, 1); continue; }
+      const d = Math.exp(-dt * p.drag);
+      p.vx *= d; p.vy *= d; p.vy += p.g * dt;
+      p.x += p.vx * dt; p.y += p.vy * dt;
+    }
+    if (Math.random() < dt * 6 * DENS){
+      spark(rand(0, W), rand(0.2, 1) * H, rand(-6, 6) * U, -rand(8, 22) * U, rand(5, 11) * U, rand(3, 6), { drag: 0, tw: true });
+    }
+    if (shoot){
+      shoot.life -= dt; shoot.x += shoot.vx * dt; shoot.y += shoot.vy * dt;
+      if (shoot.life <= 0) shoot = null;
+    }
+    flash *= Math.exp(-dt * 2);
+    ptrX += ((ptr ? (ptr.x / W - 0.5) : Math.sin(t * 0.1) * 0.3) - ptrX) * (1 - Math.exp(-dt * 1.5));
+    ptrY += ((ptr ? (ptr.y / H - 0.5) : 0) - ptrY) * (1 - Math.exp(-dt * 1.5));
+  }
+
+  function render(t){
+    const s = cur.sky.map((c) => `rgb(${c.map(Math.round)})`);
+    const g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, s[0]); g.addColorStop(0.55, s[1]); g.addColorStop(1, s[2]);
+    ctx.globalCompositeOperation = "source-over";
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+
+    const px = ptrX * 14 * U, py = ptrY * 10 * U;
+
+    if (cur.stars > 0.02){
+      for (const st of stars){
+        const a = (0.3 + 0.7 * (0.5 + 0.5 * Math.sin(t * st.s + st.ph))) * cur.stars;
+        ctx.fillStyle = `rgba(255,246,234,${a})`;
+        ctx.beginPath(); ctx.arc(st.x * W - px * 0.2, st.y * H - py * 0.2, st.r, 0, TAU); ctx.fill();
+      }
+    }
+
+    if (cur.dawn > 0.01){
+      ctx.globalCompositeOperation = "lighter";
+      ctx.globalAlpha = 0.55 * cur.dawn;
+      const r = Math.max(W, H) * 1.1;
+      ctx.drawImage(GLOW, W / 2 - r / 2, H * (1.05 - 0.1 * cur.dawn) - r / 2, r, r);
+      ctx.globalCompositeOperation = "source-over";
+    }
+
+    const mr = 190 * U, mx = W * (W < 640 ? 0.8 : 0.8) - px * 0.4, my = H * (0.17 + 0.05 * (1 - cur.moon)) - py * 0.4;
+    if (cur.moon > 0.01){
+      ctx.globalCompositeOperation = "lighter";
+      ctx.globalAlpha = 0.35 * cur.moon;
+      ctx.drawImage(GLOW, mx - mr * 1.2, my - mr * 1.2, mr * 2.4, mr * 2.4);
+      ctx.globalCompositeOperation = "source-over";
+      ctx.globalAlpha = cur.moon;
+      ctx.drawImage(MOON, mx - mr / 2, my - mr / 2, mr, mr);
+    }
+
+    ctx.globalAlpha = 1;
+    const cc = cur.cloud.map(Math.round).join(",");
+    for (const c of clouds){
+      const w = c.w * W, h = c.h * H;
+      ctx.save();
+      ctx.globalAlpha = 0.12 + cur.dawn * 0.1;
+      ctx.translate(c.x * W - px * 0.5, c.y * H - py * 0.5);
+      ctx.scale(w / 64, h / 64);
+      ctx.drawImage(SOFT, -32, -32);
+      ctx.restore();
+    }
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = `rgba(${cc},.05)`;
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.globalCompositeOperation = "lighter";
+    for (const b of bokeh){
+      const size = (22 + b.z * 110) * U;
+      const pulse = 0.65 + 0.35 * Math.sin(t * 0.6 + b.ph);
+      ctx.globalAlpha = (0.25 + b.z * 0.45) * pulse;
+      ctx.drawImage(BOKEH[b.k], b.x * W - px * (0.5 + b.z) - size / 2, b.y * H - py * (0.5 + b.z) - size / 2, size, size);
+    }
+    for (const p of parts){
+      let a = clamp(p.life / p.max, 0, 1) * clamp((p.max - p.life) / 0.3, 0, 1);
+      if (p.tw) a *= 0.5 + 0.5 * Math.sin(t * 7 + p.x);
+      ctx.globalAlpha = a;
+      ctx.drawImage(GLOW, p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
+    }
+    if (ptr){
+      ctx.globalAlpha = 0.5;
+      const r = 90 * U;
+      ctx.drawImage(GLOW, ptr.x - r / 2, ptr.y - r / 2, r, r);
+    }
+    if (shoot){
+      const a = Math.sin(Math.PI * clamp(shoot.life / 1.2, 0, 1));
+      const ex = shoot.x - shoot.vx * 0.13, ey = shoot.y - shoot.vy * 0.13;
+      const sg = ctx.createLinearGradient(shoot.x, shoot.y, ex, ey);
+      sg.addColorStop(0, `rgba(255,246,230,${a})`); sg.addColorStop(1, "rgba(255,246,230,0)");
+      ctx.globalAlpha = 1; ctx.strokeStyle = sg; ctx.lineWidth = 2 * U; ctx.lineCap = "round";
+      ctx.beginPath(); ctx.moveTo(shoot.x, shoot.y); ctx.lineTo(ex, ey); ctx.stroke();
+    }
+    if (flash > 0.005){
+      ctx.globalAlpha = flash;
+      ctx.fillStyle = "#ffe8c8"; ctx.fillRect(0, 0, W, H);
+    }
+    ctx.globalCompositeOperation = "source-over";
+    ctx.globalAlpha = 1;
+
+    const vg = ctx.createRadialGradient(W / 2, H * 0.45, Math.min(W, H) * 0.3, W / 2, H * 0.45, Math.hypot(W, H) * 0.65);
+    vg.addColorStop(0, "rgba(3,2,10,0)"); vg.addColorStop(1, "rgba(3,2,10,.5)");
+    ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
+  }
+
+  let last = performance.now(), clock = 0;
+  function loop(now){
+    const dt = Math.min((now - last) / 1000, 0.05);
+    last = now; clock += dt;
+    update(dt, clock);
+    render(clock);
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+
+  addEventListener("pointermove", (e) => {
+    if (e.pointerType === "mouse"){ ptr = { x: e.clientX, y: e.clientY }; }
+    else ptr = null;
+    if (started && Math.random() < 0.4) spark(e.clientX, e.clientY, rand(-20, 20) * U, rand(-30, 0) * U, rand(8, 16) * U, rand(0.8, 1.4), { tw: true });
+  });
+  addEventListener("pointerleave", () => { ptr = null; });
+
+  /* ================================================================
+     The song — official upload, played through YouTube's own player
+     ================================================================ */
+  const songEl = $("#song");
+  let player = null, ytReady = false, wantPlay = false;
+  window.onYouTubeIframeAPIReady = () => {
+    player = new YT.Player("yt", {
+      width: 200, height: 200, videoId: VIDEO_ID,
+      playerVars: { playsinline: 1, rel: 0, controls: 1, modestbranding: 1 },
+      events: {
+        onReady: () => { ytReady = true; if (wantPlay) playSong(); },
+        onStateChange: (e) => {
+          if (e.data === YT.PlayerState.PLAYING) songEl.classList.remove("ask");
+          if (e.data === YT.PlayerState.ENDED){ player.seekTo(0); player.playVideo(); }
+        },
+        onError: () => songEl.classList.add("broken")
+      }
+    });
+  };
+  const tag = document.createElement("script");
+  tag.src = "https://www.youtube.com/iframe_api";
+  tag.onerror = () => songEl.classList.add("broken");
+  document.head.appendChild(tag);
+
+  function playSong(){
+    try {
+      player.setVolume(0);
+      player.playVideo();
+      let v = 0;
+      const id = setInterval(() => { v = Math.min(80, v + 4); player.setVolume(v); if (v >= 80) clearInterval(id); }, 150);
+    } catch (_) {}
+    setTimeout(() => {
+      try { if (player.getPlayerState() !== YT.PlayerState.PLAYING) songEl.classList.add("ask"); }
+      catch (_) { songEl.classList.add("ask"); }
+    }, 3000);
+  }
+
+  /* ================================================================
+     The words
+     ================================================================ */
+  const storyEl = $("#story");
+  const wait = (s) => new Promise((r) => setTimeout(r, s * 1000));
+  let started = false, run = 0;
+
+  function lineEl(l){
+    const p = document.createElement("p");
+    p.className = "line" + (l.c ? " " + l.c : "");
+    l.t.split(" ").forEach((w, i) => {
+      if (i) p.appendChild(document.createTextNode(" "));
+      const s = document.createElement("span");
+      s.className = "w"; s.style.setProperty("--i", i); s.textContent = w;
+      p.appendChild(s);
+    });
+    return p;
+  }
+
+  async function tell(){
+    const me = ++run;
+    storyEl.innerHTML = "";
+    $("#again").classList.remove("on");
+    stage = 0;
+    await wait(2.2);
+    for (let gi = 0; gi < STORY.length; gi++){
+      const grp = STORY[gi];
+      if (me !== run) return;
+      stage = grp.stage;
+      const els = [];
+      for (const l of grp.lines){
+        if (me !== run) return;
+        els.forEach((e) => e.classList.add("dim"));
+        const el = lineEl(l);
+        storyEl.appendChild(el);
+        els.push(el);
+        if (l.fx === "bloom") setTimeout(bloom, 900);
+        if (l.fx === "star") setTimeout(shootingStar, 1400);
+        const words = l.t.split(" ").length;
+        await wait(2.6 + words * 0.36 + (l.c === "quote" ? 1.5 : 0));
+      }
+      if (gi === STORY.length - 1) break;
+      await wait(1.6);
+      els.forEach((e) => e.classList.add("out"));
+      await wait(1.8);
+      storyEl.innerHTML = "";
+      await wait(0.6);
+    }
+    if (me !== run) return;
+    storyEl.querySelectorAll(".line").forEach((e) => e.classList.remove("dim"));
+    await wait(6);
+    if (me === run) $("#again").classList.add("on");
+  }
+
+  function begin(){
+    if (started) return;
+    started = true;
+    $("#intro").classList.add("gone");
+    setTimeout(() => { $("#intro").style.display = "none"; }, 1500);
+    songEl.classList.add("in");
+    wantPlay = true;
+    if (ytReady) playSong();
+    tell();
+  }
+  $("#intro").addEventListener("click", begin);
+  addEventListener("keydown", (e) => {
+    if (!started && (e.key === "Enter" || e.key === " ")){ e.preventDefault(); begin(); }
+  });
+  $("#again").addEventListener("click", () => tell());
+})();
+</script>
+</body>
+</html>
