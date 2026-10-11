@@ -211,7 +211,7 @@
       { t: "sometimes I catch myself quietly wondering." }
     ]},
     { stage: 1, lines: [
-      { t: "I wonder if your mother ever watched you sleeping when you were little," },
+      { t: "I wonder if, back in Srinagar, your mother ever watched you sleeping when you were little," },
       { t: "and felt that strange, tender sorrow only parents know —" }
     ]},
     { stage: 2, lines: [
@@ -396,7 +396,7 @@
       { cx: mobile ? 0.78 : 0.68, cy: 0.2, col: ["#cdb6ff", "#efe6ff"], from: 1, at: 5.4, ph: 2.1, s: 0.85 },
       { cx: 0.42, cy: 0.24, col: ["#ffe08a", "#fff4cc"], from: -1, at: 6.3, ph: 4.0, s: 0.72 }
     ];
-    FIN = { t0: clock, out: null, a: 1, flowers, bflies, hearts: [], zz: [], last: 0, nextHeart: 5.2, nextZ: 0.6 };
+    FIN = { t0: clock, out: null, a: 1, flowers, bflies, hearts: [], zz: [], leaves: [], last: 0, nextHeart: 5.2, nextZ: 0.6, nextLeaf: 3 };
   }
   function endFinale(){ if (FIN && FIN.out === null) FIN.out = clock; }
 
@@ -587,6 +587,54 @@
     ctx.moveTo(-s * 0.51, -s * 0.02); ctx.lineTo(0, s * 0.55); ctx.lineTo(s * 0.51, -s * 0.02); ctx.closePath();
   }
 
+  function chinarPath(s){
+    ctx.beginPath();
+    ctx.moveTo(0, s * 0.22);
+    const order = [[-2.6, 0.34], [-1.83, 0.55], [-1.37, 0.36], [-0.91, 0.82], [-0.45, 0.4], [0, 1], [0.45, 0.4], [0.91, 0.82], [1.37, 0.36], [1.83, 0.55], [2.6, 0.34]];
+    for (let i = 0; i < order.length; i++){
+      const [a, r] = order[i], px = Math.sin(a) * r * s, py = -Math.cos(a) * r * s;
+      if (i % 2) ctx.lineTo(px, py);
+      else {
+        const [a0, r0] = i ? order[i - 1] : [Math.PI, 0.22], m = (a0 + a) / 2, k = (r0 + r) * 0.62;
+        ctx.quadraticCurveTo(Math.sin(m) * k * s, -Math.cos(m) * k * s, px, py);
+      }
+    }
+    ctx.closePath();
+  }
+  function drawLeaves(ft, dt){
+    const F = FIN, mobile = W < 640;
+    if (ft > F.nextLeaf && F.leaves.length < (mobile ? 6 : 10)){
+      F.leaves.push({
+        x: rand(0.05, 0.95) * W, y: -30 * U, vy: rand(26, 40) * U, ph: rand(0, TAU),
+        s: rand(14, 20) * (mobile ? 1 : U), spin: rand(-1, 1), born: ft,
+        col: pick(["#e0662f", "#cf4a2a", "#ec9440", "#d8582c", "#f2b04e"])
+      });
+      F.nextLeaf = ft + rand(0.9, 1.8);
+    }
+    for (let i = F.leaves.length - 1; i >= 0; i--){
+      const l = F.leaves[i], age = ft - l.born;
+      l.y += l.vy * dt;
+      l.x += Math.sin(age * 1.1 + l.ph) * 34 * U * dt;
+      const ground = hillY(l.x);
+      if (l.y > ground + 6 * U){ F.leaves.splice(i, 1); continue; }
+      const fade = Math.min(1, age / 1.2, (ground - l.y) / (60 * U) + 0.15);
+      ctx.save();
+      ctx.globalAlpha = F.a * clamp(fade, 0, 1) * 0.92;
+      ctx.translate(l.x, l.y);
+      ctx.rotate(Math.sin(age * 1.3 + l.ph) * 0.9 + age * l.spin * 0.4);
+      ctx.scale(0.35 + 0.65 * Math.abs(Math.cos(age * 1.7 + l.ph)), 1);
+      ctx.fillStyle = l.col;
+      chinarPath(l.s); ctx.fill();
+      ctx.strokeStyle = "rgba(120,40,20,.45)"; ctx.lineWidth = Math.max(0.8, l.s * 0.05);
+      ctx.beginPath();
+      ctx.moveTo(0, l.s * 0.5); ctx.lineTo(0, -l.s * 0.8);
+      ctx.moveTo(0, l.s * 0.1); ctx.lineTo(-l.s * 0.6, -l.s * 0.38);
+      ctx.moveTo(0, l.s * 0.1); ctx.lineTo(l.s * 0.6, -l.s * 0.38);
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
   function drawFinale(ft){
     const F = FIN, mobile = W < 640;
     const dt = clamp(ft - F.last, 0, 0.05); F.last = ft;
@@ -616,6 +664,8 @@
     drawHills(lift);
     drawFlowers(ft, lift);
     drawButterflies(ft, lift);
+    drawLeaves(ft, dt);
+    ctx.globalAlpha = F.a;
     for (let i = F.hearts.length - 1; i >= 0; i--){
       const h = F.hearts[i];
       h.life += dt;
@@ -840,6 +890,9 @@
     await wait(7.5);
     if (me !== run) return;
     storyEl.appendChild(lineEl({ t: "See? Even the sun agrees.", c: "aside" }));
+    await wait(4);
+    if (me !== run) return;
+    storyEl.appendChild(lineEl({ t: "No wonder the place you were born is called heaven on earth.", c: "aside" }));
     await wait(5);
     if (me === run) $("#again").classList.add("on");
   }
