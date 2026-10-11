@@ -114,6 +114,14 @@
     background:linear-gradient(180deg, #fff6e0 15%, #f1cf8e 60%, #d79a5c);
     -webkit-background-clip:text; background-clip:text; color:transparent;
   }
+  #story{ transition:transform 2.4s cubic-bezier(.4,.1,.2,1); }
+  #story.finale{ transform:translate(-50%, -12vh); }
+  .line.aside{
+    margin-top:.6em;
+    font-style:italic; font-weight:600;
+    font-size:clamp(1.3rem, 4.4vw, 2rem);
+    color:var(--gold);
+  }
   .line.warm{
     font-weight:600;
     font-size:clamp(1.9rem, 6.4vw, 3.5rem);
@@ -161,7 +169,8 @@
   #song.broken .fallback{ display:block; }
 
   @media (max-width:640px){
-    #story{ height:calc(100% - 300px); top:10px; }
+    #story{ height:calc(100% - 360px); top:10px; }
+    #story.finale{ transform:translate(-50%, -4vh); }
     #song{ right:auto; left:50%; transform:translate(-50%, 160%) rotate(4deg); }
     #song.in{ transform:translate(-50%, 0) rotate(-2deg); }
     #again{ bottom:auto; top:calc(14px + env(safe-area-inset-top)); }
@@ -212,7 +221,7 @@
     ]},
     { stage: 3, lines: [
       { t: "I don’t know if it ever will." },
-      { t: "But I know it’s a warmer, lovelier place, simply because you’re in it.", c: "warm", fx: "dawn" }
+      { t: "But I know it’s a warmer, lovelier place, simply because you’re in it.", c: "warm" }
     ]}
   ];
 
@@ -222,6 +231,9 @@
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const lerp = (a, b, t) => a + (b - a) * t;
   const pick = (a) => a[(Math.random() * a.length) | 0];
+  const easeOutCubic = (x) => 1 - Math.pow(1 - x, 3);
+  const easeInOut = (x) => x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+  const easeOutBack = (x) => { const c1 = 1.7, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
   const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   /* ================================================================
@@ -245,7 +257,8 @@
     { sky: ["#070a1f", "#141a3e", "#2a2350"], stars: 1,    moon: 1,   dawn: 0,   cloud: [150, 140, 210] },
     { sky: ["#0c0a26", "#2a1a48", "#5e3160"], stars: 0.9,  moon: 1,   dawn: 0.05, cloud: [200, 150, 200] },
     { sky: ["#110b29", "#3a1d50", "#93466a"], stars: 1,    moon: 1,   dawn: 0.15, cloud: [235, 160, 190] },
-    { sky: ["#1e1a44", "#71406f", "#f2a46e"], stars: 0.25, moon: 0.4, dawn: 1,   cloud: [255, 200, 170] }
+    { sky: ["#1e1a44", "#71406f", "#f2a46e"], stars: 0.25, moon: 0.4, dawn: 1,   cloud: [255, 200, 170] },
+    { sky: ["#3d4488", "#c27a98", "#ffc78e"], stars: 0.05, moon: 0.6, dawn: 1,   cloud: [255, 215, 200] }
   ].map((p) => ({ ...p, sky: p.sky.map(hex) }));
   const cur = { sky: PAL[0].sky.map((c) => c.slice()), stars: 1, moon: 0, dawn: 0, cloud: PAL[0].cloud.slice() };
   let stage = 0;
@@ -355,6 +368,269 @@
     ptrY += ((ptr ? (ptr.y / H - 0.5) : 0) - ptrY) * (1 - Math.exp(-dt * 1.5));
   }
 
+  /* ================================================================
+     Finale — the world, agreeing
+     ================================================================ */
+  let FIN = null;
+  function finT(){
+    if (!FIN) return null;
+    if (FIN.out !== null){
+      FIN.a = 1 - clamp((clock - FIN.out) / 1.4, 0, 1);
+      if (FIN.a <= 0){ FIN = null; return null; }
+    }
+    return clock - FIN.t0;
+  }
+  function startFinale(){
+    const mobile = W < 640;
+    const n = mobile ? 9 : 16;
+    const maxX = mobile ? 0.97 : Math.min(0.97, (W - 290) / W);
+    const cols = [["#ffb3c7", "#ff8fb0"], ["#ffd1a6", "#ffb07a"], ["#d9c2ff", "#b99bf2"], ["#fff1a8", "#ffd96a"], ["#ffffff", "#f3e6ff"]];
+    const flowers = [];
+    for (let i = 0; i < n; i++){
+      const x = 0.03 + ((i + 0.5 + rand(-0.25, 0.25)) / n) * (maxX - 0.03);
+      flowers.push({ x, h: rand(0.6, 1.2), r: rand(0.8, 1.15), col: pick(cols), petals: Math.random() < 0.5 ? 5 : 6, face: Math.random() < 0.4, ph: rand(0, TAU) });
+    }
+    flowers.slice().sort((a, b) => Math.abs(a.x - 0.5) - Math.abs(b.x - 0.5)).forEach((f, i) => { f.at = 2.6 + i * 0.2; });
+    const bflies = [
+      { cx: 0.2, cy: 0.12, col: ["#ffb3c7", "#ffd9e4"], from: -1, at: 4.6, ph: 0.3, s: 1 },
+      { cx: mobile ? 0.78 : 0.68, cy: 0.2, col: ["#cdb6ff", "#efe6ff"], from: 1, at: 5.4, ph: 2.1, s: 0.85 },
+      { cx: 0.42, cy: 0.24, col: ["#ffe08a", "#fff4cc"], from: -1, at: 6.3, ph: 4.0, s: 0.72 }
+    ];
+    FIN = { t0: clock, out: null, a: 1, flowers, bflies, hearts: [], zz: [], last: 0, nextHeart: 5.2, nextZ: 0.6 };
+  }
+  function endFinale(){ if (FIN && FIN.out === null) FIN.out = clock; }
+
+  const horizon = () => (W < 640 ? H - 330 : H * 0.8);
+  function hillY(x){
+    const hy = horizon(), t = clamp(x / W, 0, 1), y0 = hy + 22 * U, yc = hy - 30 * U;
+    return (1 - t) * (1 - t) * y0 + 2 * t * (1 - t) * yc + t * t * y0;
+  }
+
+  function drawMoonFace(mx, my, r, a){
+    if (a < 0.01) return;
+    ctx.save();
+    ctx.globalAlpha = a;
+    ctx.strokeStyle = "#8a6a3e"; ctx.lineWidth = r * 0.07; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.arc(mx - r * 0.62, my - r * 0.14, r * 0.11, 0.15 * Math.PI, 0.85 * Math.PI); ctx.stroke();
+    ctx.beginPath(); ctx.arc(mx - r * 0.64, my + r * 0.2, r * 0.09, 0.2 * Math.PI, 0.8 * Math.PI); ctx.stroke();
+    ctx.fillStyle = "rgba(255,140,150,.45)";
+    ctx.beginPath(); ctx.ellipse(mx - r * 0.42, my + r * 0.05, r * 0.12, r * 0.07, 0, 0, TAU); ctx.fill();
+    ctx.restore();
+  }
+  function drawZzz(mx, my, r, ft){
+    const F = FIN;
+    if (ft > F.nextZ && ft < 7.5){ F.zz.push({ x: mx - r * 0.3, y: my - r * 0.7, born: ft }); F.nextZ += 0.75; }
+    ctx.save();
+    for (let i = F.zz.length - 1; i >= 0; i--){
+      const z = F.zz[i], age = ft - z.born;
+      if (age > 2.4){ F.zz.splice(i, 1); continue; }
+      ctx.globalAlpha = Math.sin(Math.PI * age / 2.4) * 0.9 * F.a;
+      ctx.fillStyle = "#fff6ea";
+      ctx.font = `italic 600 ${Math.round((12 + age * 8) * U)}px "Cormorant Garamond", Georgia, serif`;
+      ctx.fillText("z", z.x - age * 20 * U + Math.sin(age * 3) * 5 * U, z.y - age * 30 * U);
+    }
+    ctx.restore();
+  }
+
+  function drawSun(x, y, r, ft){
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    ctx.globalAlpha *= 0.6;
+    ctx.drawImage(GLOW, x - r * 3.2, y - r * 3.2, r * 6.4, r * 6.4);
+    ctx.restore();
+    const happy = ft > 4.6;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(happy ? Math.sin(clock * 3) * 0.06 : 0);
+    ctx.save();
+    ctx.rotate(clock * 0.18);
+    ctx.fillStyle = "#ffd66e";
+    for (let i = 0; i < 12; i++){
+      ctx.rotate(TAU / 12);
+      const L = r * (1.3 + 0.06 * Math.sin(clock * 3 + i));
+      ctx.beginPath(); ctx.ellipse(L, 0, r * 0.2, r * 0.075, 0, 0, TAU); ctx.fill();
+    }
+    ctx.restore();
+    const g = ctx.createRadialGradient(-r * 0.3, -r * 0.35, r * 0.1, 0, 0, r);
+    g.addColorStop(0, "#fff4c4"); g.addColorStop(0.6, "#ffcf63"); g.addColorStop(1, "#ffad4a");
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, r, 0, TAU); ctx.fill();
+    ctx.fillStyle = "rgba(255,120,140,.42)";
+    [-1, 1].forEach((s) => { ctx.beginPath(); ctx.ellipse(s * r * 0.52, r * 0.2, r * 0.17, r * 0.1, 0, 0, TAU); ctx.fill(); });
+    ctx.strokeStyle = "#6b3a1e"; ctx.lineWidth = r * 0.055; ctx.lineCap = "round";
+    const open = ft > 4.2, bt = (ft - 4.2) % 3.4, blink = open && bt > 2.9 && bt < 3.05;
+    [-1, 1].forEach((s) => {
+      const ex = s * r * 0.32, ey = -r * 0.06;
+      if (!open || blink){
+        ctx.beginPath(); ctx.arc(ex, ey - r * 0.03, r * 0.11, 0.15 * Math.PI, 0.85 * Math.PI); ctx.stroke();
+      } else {
+        ctx.fillStyle = "#5a2f17";
+        ctx.beginPath(); ctx.ellipse(ex, ey, r * 0.075, r * 0.095, 0, 0, TAU); ctx.fill();
+        ctx.fillStyle = "#fff";
+        ctx.beginPath(); ctx.arc(ex + r * 0.025, ey - r * 0.035, r * 0.028, 0, TAU); ctx.fill();
+      }
+    });
+    if (happy){
+      ctx.fillStyle = "#c2452f";
+      ctx.beginPath(); ctx.moveTo(-r * 0.17, r * 0.16); ctx.quadraticCurveTo(0, r * 0.48, r * 0.17, r * 0.16); ctx.closePath(); ctx.fill();
+    } else {
+      ctx.beginPath(); ctx.arc(0, r * 0.12, r * 0.15, 0.2 * Math.PI, 0.8 * Math.PI); ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function drawHills(lift){
+    const hy = horizon() + lift;
+    const bg = ctx.createLinearGradient(0, hy - 60 * U, 0, H);
+    bg.addColorStop(0, "#a48fbc"); bg.addColorStop(1, "#6c5a8c");
+    ctx.fillStyle = bg;
+    ctx.beginPath();
+    ctx.moveTo(0, H); ctx.lineTo(0, hy - 8 * U);
+    ctx.quadraticCurveTo(W * 0.25, hy - 62 * U, W * 0.55, hy);
+    ctx.quadraticCurveTo(W * 0.8, hy - 52 * U, W, hy - 12 * U);
+    ctx.lineTo(W, H); ctx.closePath(); ctx.fill();
+    const fg = ctx.createLinearGradient(0, hy - 30 * U, 0, H);
+    fg.addColorStop(0, "#acc99d"); fg.addColorStop(1, "#5a7a68");
+    ctx.fillStyle = fg;
+    ctx.beginPath();
+    ctx.moveTo(0, H); ctx.lineTo(0, hillY(0) + lift);
+    ctx.quadraticCurveTo(W / 2, horizon() - 30 * U + lift, W, hillY(W) + lift);
+    ctx.lineTo(W, H); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = "rgba(255,236,200,.45)"; ctx.lineWidth = 2 * U;
+    ctx.beginPath(); ctx.moveTo(0, hillY(0) + lift);
+    ctx.quadraticCurveTo(W / 2, horizon() - 30 * U + lift, W, hillY(W) + lift); ctx.stroke();
+  }
+
+  function drawFlowers(ft, lift){
+    const mobile = W < 640;
+    for (const f of FIN.flowers){
+      const age = ft - f.at;
+      if (age < 0) continue;
+      const x = f.x * W, by = hillY(x) + lift + 10 * U;
+      const grow = easeOutCubic(clamp(age / 0.5, 0, 1));
+      const pop = age < 0.25 ? 0 : easeOutBack(clamp((age - 0.25) / 0.6, 0, 1));
+      const L = (mobile ? 46 : 62 * U) * f.h * grow;
+      const sw = Math.sin(clock * 2 + f.ph) * 0.12;
+      const hx = x + Math.sin(sw) * L, hy = by - Math.cos(sw) * L;
+      ctx.strokeStyle = "#5e9a5c"; ctx.lineWidth = 3 * U; ctx.lineCap = "round";
+      ctx.beginPath(); ctx.moveTo(x, by); ctx.quadraticCurveTo(x, by - L * 0.5, hx, hy); ctx.stroke();
+      if (grow > 0.6){
+        ctx.fillStyle = "#74b06c";
+        ctx.save(); ctx.translate(x + (hx - x) * 0.3, by - L * 0.4); ctx.rotate(-0.8 + sw);
+        ctx.beginPath(); ctx.ellipse(7 * U, 0, 8 * U, 3.5 * U, 0, 0, TAU); ctx.fill();
+        ctx.restore();
+      }
+      if (pop <= 0) continue;
+      const R = (mobile ? 13 : 16 * U) * f.r * pop;
+      ctx.save(); ctx.translate(hx, hy); ctx.rotate(sw * 0.8 + (1 - Math.min(pop, 1)) * 1.5);
+      ctx.fillStyle = f.col[0];
+      for (let k = 0; k < f.petals; k++){
+        const a = k * TAU / f.petals;
+        ctx.beginPath(); ctx.arc(Math.cos(a) * R * 0.62, Math.sin(a) * R * 0.62, R * 0.5, 0, TAU); ctx.fill();
+      }
+      ctx.fillStyle = f.col[1]; ctx.beginPath(); ctx.arc(0, 0, R * 0.55, 0, TAU); ctx.fill();
+      ctx.fillStyle = "#ffcf5a"; ctx.beginPath(); ctx.arc(0, 0, R * 0.38, 0, TAU); ctx.fill();
+      if (f.face && pop > 0.9){
+        ctx.fillStyle = "#6b3a1e";
+        [-1, 1].forEach((s) => { ctx.beginPath(); ctx.arc(s * R * 0.14, -R * 0.06, R * 0.05, 0, TAU); ctx.fill(); });
+        ctx.strokeStyle = "#6b3a1e"; ctx.lineWidth = R * 0.06;
+        ctx.beginPath(); ctx.arc(0, R * 0.04, R * 0.13, 0.2 * Math.PI, 0.8 * Math.PI); ctx.stroke();
+      }
+      ctx.restore();
+      if (!f.popped && pop > 0.5){
+        f.popped = true;
+        for (let i = 0; i < 6; i++){
+          const a = rand(0, TAU), v = rand(30, 90) * U;
+          spark(hx, hy, Math.cos(a) * v, Math.sin(a) * v, rand(8, 14) * U, rand(0.5, 0.9), { drag: 2 });
+        }
+      }
+    }
+  }
+
+  function drawButterflies(ft, lift){
+    const hy = horizon(), mobile = W < 640;
+    for (const b of FIN.bflies){
+      const age = ft - b.at;
+      if (age < 0) continue;
+      const ent = easeOutCubic(clamp(age / 3, 0, 1));
+      const tx = b.cx * W + Math.sin(clock * 0.6 + b.ph) * W * 0.1;
+      const ty = hy - H * b.cy + Math.sin(clock * 1.4 + b.ph) * 26 * U + lift;
+      const x = lerp(b.from < 0 ? -60 : W + 60, tx, ent), y = lerp(ty - 120 * U, ty, ent);
+      const flap = 0.2 + 0.8 * Math.abs(Math.sin(clock * 11 + b.ph));
+      const s = b.s * (mobile ? 1.15 : 1.4 * U);
+      ctx.save(); ctx.translate(x, y); ctx.rotate(Math.sin(clock * 1.8 + b.ph) * 0.25); ctx.scale(s, s);
+      [-1, 1].forEach((side) => {
+        ctx.save(); ctx.scale(side * flap, 1);
+        ctx.fillStyle = b.col[0];
+        ctx.beginPath(); ctx.ellipse(11, -7, 12, 9, -0.5, 0, TAU); ctx.fill();
+        ctx.fillStyle = b.col[1];
+        ctx.beginPath(); ctx.ellipse(8, 7, 7.5, 6, 0.5, 0, TAU); ctx.fill();
+        ctx.fillStyle = "rgba(255,255,255,.75)";
+        ctx.beginPath(); ctx.arc(13, -8, 2.6, 0, TAU); ctx.fill();
+        ctx.restore();
+      });
+      ctx.fillStyle = "#4a3550";
+      ctx.beginPath(); ctx.ellipse(0, 0, 2.2, 10, 0, 0, TAU); ctx.fill();
+      ctx.strokeStyle = "#4a3550"; ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(-1, -9); ctx.quadraticCurveTo(-4, -16, -7, -18);
+      ctx.moveTo(1, -9); ctx.quadraticCurveTo(4, -16, 7, -18);
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  function heartPath(s){
+    const r = s * 0.27;
+    ctx.beginPath();
+    ctx.moveTo(-s * 0.25 + r, -s * 0.1); ctx.arc(-s * 0.25, -s * 0.1, r, 0, TAU);
+    ctx.moveTo(s * 0.25 + r, -s * 0.1); ctx.arc(s * 0.25, -s * 0.1, r, 0, TAU);
+    ctx.moveTo(-s * 0.51, -s * 0.02); ctx.lineTo(0, s * 0.55); ctx.lineTo(s * 0.51, -s * 0.02); ctx.closePath();
+  }
+
+  function drawFinale(ft){
+    const F = FIN, mobile = W < 640;
+    const dt = clamp(ft - F.last, 0, 0.05); F.last = ft;
+    const hy = horizon();
+    const lift = (1 - easeOutCubic(clamp((ft - 0.6) / 1.8, 0, 1))) * 170 * U;
+    const sr = mobile ? 54 : 92 * U;
+    const rise = easeOutCubic(clamp((ft - 1.4) / 2.8, 0, 1));
+    const sx = W / 2, sy = lerp(hy + sr * 1.3, hy - 4 * U - sr * 0.62, rise) + lift;
+
+    if (ft > F.nextHeart){
+      const burst = F.hearts.length === 0 && ft < 6 ? 10 : 1;
+      for (let i = 0; i < burst; i++){
+        F.hearts.push({
+          x: sx + rand(-0.7, 0.7) * sr, y: sy - sr * 0.5,
+          vx: rand(-18, 18) * U, vy: -rand(40, 75) * U,
+          s: rand(12, 20) * Math.max(U, 0.85), life: 0, max: rand(3.4, 4.6), ph: rand(0, TAU),
+          col: pick(["#ff8fb0", "#ffb3c7", "#ff6f91", "#ffd1dc"])
+        });
+      }
+      F.nextHeart = ft + (ft < 12 ? rand(0.35, 0.7) : rand(1, 1.6));
+    }
+
+    ctx.save();
+    ctx.globalAlpha = F.a;
+    drawSun(sx, sy, sr, ft);
+    ctx.globalAlpha = F.a;
+    drawHills(lift);
+    drawFlowers(ft, lift);
+    drawButterflies(ft, lift);
+    for (let i = F.hearts.length - 1; i >= 0; i--){
+      const h = F.hearts[i];
+      h.life += dt;
+      if (h.life > h.max){ F.hearts.splice(i, 1); continue; }
+      h.x += (h.vx + Math.sin(h.life * 3 + h.ph) * 20 * U) * dt;
+      h.y += h.vy * dt;
+      ctx.globalAlpha = F.a * Math.sin(Math.PI * h.life / h.max) * 0.95;
+      ctx.fillStyle = h.col;
+      ctx.save(); ctx.translate(h.x, h.y); ctx.rotate(Math.sin(h.life * 2 + h.ph) * 0.25);
+      heartPath(h.s * Math.min(1, h.life * 3)); ctx.fill();
+      ctx.restore();
+    }
+    ctx.restore();
+  }
+
   function render(t){
     const s = cur.sky.map((c) => `rgb(${c.map(Math.round)})`);
     const g = ctx.createLinearGradient(0, 0, 0, H);
@@ -381,15 +657,20 @@
       ctx.globalCompositeOperation = "source-over";
     }
 
-    const mr = 190 * U, mx = W * (W < 640 ? 0.8 : 0.8) - px * 0.4, my = H * (0.17 + 0.05 * (1 - cur.moon)) - py * 0.4;
-    if (cur.moon > 0.01){
+    const ft = finT();
+    const sink = ft === null ? 0 : easeInOut(clamp((ft - 1.6) / 7, 0, 1));
+    const mr = 190 * U, mx = W * (0.8 + 0.3 * sink) - px * 0.4, my = H * (0.17 + 0.05 * (1 - cur.moon) + 0.3 * sink) - py * 0.4;
+    const ma = cur.moon * (1 - clamp((sink - 0.55) / 0.45, 0, 1));
+    if (ma > 0.01){
       ctx.globalCompositeOperation = "lighter";
-      ctx.globalAlpha = 0.35 * cur.moon;
+      ctx.globalAlpha = 0.35 * ma;
       ctx.drawImage(GLOW, mx - mr * 1.2, my - mr * 1.2, mr * 2.4, mr * 2.4);
       ctx.globalCompositeOperation = "source-over";
-      ctx.globalAlpha = cur.moon;
+      ctx.globalAlpha = ma;
       ctx.drawImage(MOON, mx - mr / 2, my - mr / 2, mr, mr);
+      if (ft !== null) drawMoonFace(mx, my, mr * 0.3, ma * clamp(ft / 1.2, 0, 1) * FIN.a);
     }
+    if (ft !== null) drawZzz(mx, my, mr * 0.3, ft);
 
     ctx.globalAlpha = 1;
     const cc = cur.cloud.map(Math.round).join(",");
@@ -405,6 +686,8 @@
     ctx.globalAlpha = 1;
     ctx.fillStyle = `rgba(${cc},.05)`;
     ctx.fillRect(0, 0, W, H);
+
+    if (ft !== null) drawFinale(ft);
 
     ctx.globalCompositeOperation = "lighter";
     for (const b of bokeh){
@@ -521,9 +804,11 @@
     const me = ++run;
     storyEl.innerHTML = "";
     $("#again").classList.remove("on");
+    storyEl.classList.remove("finale");
+    endFinale();
     stage = 0;
     await wait(2.2);
-    for (let gi = 0; gi < STORY.length; gi++){
+    for (let gi = location.hash === "#finale" ? STORY.length - 1 : 0; gi < STORY.length; gi++){
       const grp = STORY[gi];
       if (me !== run) return;
       stage = grp.stage;
@@ -537,7 +822,8 @@
         if (l.fx === "bloom") setTimeout(bloom, 900);
         if (l.fx === "star") setTimeout(shootingStar, 1400);
         const words = l.t.split(" ").length;
-        await wait(2.6 + words * 0.36 + (l.c === "quote" ? 1.5 : 0));
+        const lastLine = gi === STORY.length - 1 && l === grp.lines[grp.lines.length - 1];
+        await wait(lastLine ? 4.2 : 2.6 + words * 0.36 + (l.c === "quote" ? 1.5 : 0));
       }
       if (gi === STORY.length - 1) break;
       await wait(1.6);
@@ -548,7 +834,13 @@
     }
     if (me !== run) return;
     storyEl.querySelectorAll(".line").forEach((e) => e.classList.remove("dim"));
-    await wait(6);
+    storyEl.classList.add("finale");
+    stage = 4;
+    startFinale();
+    await wait(7.5);
+    if (me !== run) return;
+    storyEl.appendChild(lineEl({ t: "See? Even the sun agrees.", c: "aside" }));
+    await wait(5);
     if (me === run) $("#again").classList.add("on");
   }
 
